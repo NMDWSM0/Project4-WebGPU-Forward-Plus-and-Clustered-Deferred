@@ -1,17 +1,41 @@
-import { Mat4, mat4, Vec3, vec3 } from "wgpu-matrix";
+import { Mat4, mat4, Vec2, Vec3, vec3 } from "wgpu-matrix";
 import { toRadians } from "../math_util";
 import { device, canvas, fovYDegrees, aspectRatio } from "../renderer";
 
 class CameraUniforms {
-    readonly buffer = new ArrayBuffer(16 * 4);
-    private readonly floatView = new Float32Array(this.buffer);
+    readonly buffer = new ArrayBuffer(16 * 4 * 5 + 16);
+    private readonly floatView = new Float32Array(
+        this.buffer,
+        0 /*byte*/,
+        16 * 5 /*num elements*/
+    );
+    private readonly uintView = new Uint32Array(this.buffer, 16 * 4 * 5, 4);
 
     set viewProjMat(mat: Float32Array) {
         // TODO-1.1: set the first 16 elements of `this.floatView` to the input `mat`
-        this.floatView.set(mat.subarray(0, 16));
+        this.floatView.set(mat.subarray(0, 16), 0);
     }
 
     // TODO-2: add extra functions to set values needed for light clustering here
+    set viewMat(mat: Float32Array) {
+        this.floatView.set(mat.subarray(0, 16), 16 * 1);
+    }
+
+    set projMat(mat: Float32Array) {
+        this.floatView.set(mat.subarray(0, 16), 16 * 2);
+    }
+
+    set invViewMat(mat: Float32Array) {
+        this.floatView.set(mat.subarray(0, 16), 16 * 3);
+    }
+
+    set invProjMat(mat: Float32Array) {
+        this.floatView.set(mat.subarray(0, 16), 16 * 4);
+    }
+
+    set screenSize(size: Uint32Array) {
+        this.uintView.set(size.subarray(0, 2));
+    }
 }
 
 export class Camera {
@@ -157,11 +181,21 @@ export class Camera {
             vec3.scale(this.cameraFront, 1)
         );
         const viewMat = mat4.lookAt(this.cameraPos, lookPos, [0, 1, 0]);
+        const invViewMat = mat4.inverse(viewMat);
+        const invProjMat = mat4.inverse(this.projMat);
         const viewProjMat = mat4.mul(this.projMat, viewMat);
         // TODO-1.1: set `this.uniforms.viewProjMat` to the newly calculated view proj mat
         this.uniforms.viewProjMat = viewProjMat;
 
         // TODO-2: write to extra buffers needed for light clustering here
+        this.uniforms.viewMat = viewMat;
+        this.uniforms.projMat = this.projMat;
+        this.uniforms.invViewMat = invViewMat;
+        this.uniforms.invProjMat = invProjMat;
+        this.uniforms.screenSize = new Uint32Array([
+            canvas.width,
+            canvas.height,
+        ]);
 
         // TODO-1.1: upload `this.uniforms.buffer` (host side) to `this.uniformsBuffer` (device side)
         // check `lights.ts` for examples of using `device.queue.writeBuffer()`
