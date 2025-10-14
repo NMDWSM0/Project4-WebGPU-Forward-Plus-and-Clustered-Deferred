@@ -52,6 +52,15 @@ fn calculateLightContrib(light: Light, posWorld: vec3f, nor: vec3f) -> vec3f {
     return light.color * lambert * rangeAttenuation(distToLight);
 }
 
+fn calculateLightContribViewSpace(viewMat: mat4x4f, light: Light, posView: vec3f, norView: vec3f) -> vec3f {
+    let lightPos = (viewMat * vec4f(light.pos, 1.f)).xyz;
+    let vecToLight = lightPos - posView;
+    let distToLight = length(vecToLight);
+
+    let lambert = max(dot(norView, normalize(vecToLight)), 0.f);
+    return light.color * lambert * rangeAttenuation(distToLight);
+}
+
 fn sphereIntersectsCluster(planes: array<Plane, 6>, center: vec3f, radius: f32) -> bool {
     for (var p = 0u; p < 6; p++) {
         var dist = dot(planes[p].n, center) + planes[p].d;

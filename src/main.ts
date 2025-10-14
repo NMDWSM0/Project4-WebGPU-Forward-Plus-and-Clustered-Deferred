@@ -59,7 +59,7 @@ const renderModes = {
     clusteredDeferred: "clustered deferred",
 };
 let renderModeController = gui.add(
-    { mode: renderModes.forwardPlus },
+    { mode: renderModes.clusteredDeferred },
     "mode",
     renderModes
 );

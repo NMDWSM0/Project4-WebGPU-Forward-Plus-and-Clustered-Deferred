@@ -28,11 +28,16 @@ fn main(in: VertexInput) -> VertexOutput
 {
     let modelPos = modelMat * vec4(in.pos, 1);
     let viewPos = camUniforms.viewMat * modelPos;
+    let modelMat3 : mat3x3f = mat3x3f(
+        modelMat[0].xyz,
+        modelMat[1].xyz,
+        modelMat[2].xyz
+    );
 
     var out: VertexOutput;
     out.fragPos = camUniforms.viewProjMat * modelPos; // TODO-1.3: replace ??? with the view proj mat from your CameraUniforms uniform variable
     out.pos = modelPos.xyz / modelPos.w;
-    out.nor = in.nor;
+    out.nor = modelMat3 * in.nor;
     out.uv = in.uv;
     out.viewPos = viewPos.xyz / viewPos.w;
     return out;
