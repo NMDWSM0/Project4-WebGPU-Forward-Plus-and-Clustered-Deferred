@@ -23,6 +23,6 @@ fn vs_fullscreen(@builtin(vertex_index) vid: u32) -> VertexOutput {
 
     var o: VertexOutput;
     o.fragPos = vec4f(pos[vid], 0.0, 1.0);
-    o.uv  = uv2[vid];
+    o.uv = uv2[vid];
     return o;
 }

@@ -5,6 +5,7 @@ import { initWebGPU, Renderer } from "./renderer";
 import { NaiveRenderer } from "./renderers/naive";
 import { ForwardPlusRenderer } from "./renderers/forward_plus";
 import { ClusteredDeferredRenderer } from "./renderers/clustered_deferred";
+import { ClusteredDeferredOptimizedRenderer } from "./renderers/clustered_deferred_optimized";
 
 import { setupLoaders, Scene } from "./stage/scene";
 import { Lights } from "./stage/lights";
@@ -50,6 +51,9 @@ function setRenderer(mode: string) {
         case renderModes.clusteredDeferred:
             renderer = new ClusteredDeferredRenderer(stage);
             break;
+        case renderModes.clusteredDeferredOptimized:
+            renderer = new ClusteredDeferredOptimizedRenderer(stage);
+            break;
     }
 }
 
@@ -57,9 +61,10 @@ const renderModes = {
     naive: "naive",
     forwardPlus: "forward+",
     clusteredDeferred: "clustered deferred",
+    clusteredDeferredOptimized: "clustered deferred optimized",
 };
 let renderModeController = gui.add(
-    { mode: renderModes.clusteredDeferred },
+    { mode: renderModes.clusteredDeferredOptimized },
     "mode",
     renderModes
 );

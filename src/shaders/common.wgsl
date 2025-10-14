@@ -82,7 +82,7 @@ fn zIndex(d : f32) -> u32 {
 }
 
 // given z index, return d(-linearZ) in view space
-fn zBounds(index: u32) -> vec2<f32> {
+fn zBounds(index: u32) -> vec2f {
     let numClustersZ = f32(${numClustersZ});
     let dn = max(1e-4, ${clusterNear});
     let df = max(dn * 1.0001, ${clusterFar});
@@ -92,7 +92,7 @@ fn zBounds(index: u32) -> vec2<f32> {
 
     let d0 = mix(dn, df, t0);
     let d1 = mix(dn, df, t1);
-    return vec2<f32>(d0, d1);
+    return vec2f(d0, d1);
 }
 
 fn posToClusterId(fragPos: vec4f, viewPos: vec3f, numClusterX: u32, numClusterY: u32) -> u32 {
@@ -101,4 +101,27 @@ fn posToClusterId(fragPos: vec4f, viewPos: vec3f, numClusterX: u32, numClusterY:
     let clusterIdxZ = zIndex(-viewPos.z);
     let clusterIdx = clusterIdxZ + clusterIdxX * ${numClustersZ} + clusterIdxY * numClusterX * ${numClustersZ};
     return clusterIdx;
+}
+
+fn signNZero(v: vec2f) -> vec2f {
+    return vec2f(select(-1.0, 1.0, v.x >= 0.0), select(-1.0, 1.0, v.y >= 0.0));
+}
+
+fn encodeOct(n_in: vec3f) -> vec2f {
+    let n = normalize(n_in);
+    let denom = abs(n.x) + abs(n.y) + abs(n.z) + 1e-8;
+    var p = n.xy / denom;
+    if (n.z <= 0.0) {
+        p = (1.0 - abs(p.yx)) * signNZero(p);
+    }
+    return p;
+}
+
+fn decodeOct(p_in: vec2f) -> vec3f {
+    var n = vec3f(p_in.x, p_in.y, 1.0 - abs(p_in.x) - abs(p_in.y));
+    if (n.z < 0.0) {
+        let p = (1.0 - abs(n.yx)) * signNZero(n.xy);
+        n.x = p.x; n.y = p.y;
+    }
+    return normalize(n);
 }
