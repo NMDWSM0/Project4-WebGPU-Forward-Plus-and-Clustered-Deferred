@@ -42,7 +42,7 @@ export const constants = {
     clusterNear: 0.01,
     clusterFar: 25.0,
 };
-
+console.log(constants);
 // =================================
 
 function evalShaderRaw(raw: string) {
